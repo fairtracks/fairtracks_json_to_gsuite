@@ -13,7 +13,8 @@ def index():
 def to_gsuite():
     gsuite = GSuite()
     for dataset in request.json:
-        gsuite.addTrack(GSuiteTrack(uri='http://test.com/file.tar.gz', attributes=dataset['standardContent']))
+        standard_content = dict((k, str(v)) for k, v in dataset['standardContent'].iteritems() if v)
+        gsuite.addTrack(GSuiteTrack(uri='http://test.com/file.tar.gz', attributes=standard_content))
     return composeToString(gsuite)
 
 
