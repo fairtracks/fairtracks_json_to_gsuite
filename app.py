@@ -13,7 +13,7 @@ def index():
 def to_gsuite():
     gsuite = GSuite()
     for dataset in request.json:
-        standard_content = dict((k, str(v)) for k, v in dataset['standardContent'].iteritems() if v)
+        standard_content = dict((k, str(v)) for k, v in dataset['fair'].iteritems() if v)
         if 'uri' in standard_content:
             uri = standard_content.pop('uri', None)
             gsuite.addTrack(GSuiteTrack(uri=uri, attributes=standard_content))
