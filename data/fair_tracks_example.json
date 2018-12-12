@@ -19,9 +19,9 @@
   },
   "fair_tracks": {
     "experiment": {
-      "metadata_version": "123-546-789",
-      "experiment_id": "123-546-789",
-      "project_experiment_id": "123-546-789",
+      "metadata_version": "123:456:789",
+      "experiment_id": "123:456:789",
+      "project_experiment_id": "123:456:789",
       "experiment_ontology_uri": "http://purl.obolibrary.org/obo/OBI_0000716",
       "experiment_type": "ChIP-seq assay",
       "contact_orcid_id": "https://orcid.org/0000-0002-9103-1077\r",
@@ -31,22 +31,22 @@
     },
     "sample": {
       "biosample_id": "SAMN08738466",
-      "project_sample_id": "123-456-789",
+      "project_sample_id": "123:456:789",
       "sample_ontology_uri": "http://www.ebi.ac.uk/efo/EFO_0003042",
       "sample_type": "H1-hESC",
       "biomaterial_type": "Cell line"
     },
     "study": {
       "project": "MyProject",
-      "project_study_id": "123-456-789",
+      "project_study_id": "123:456:789",
       "pubmed_id": 28459977,
       "disease_ontology_uri": "https://ncim.nci.nih.gov/ncimbrowser/ConceptReport.jsp?dictionary=NCI%20Metathesaurus&code=C1272460",
       "disease": "Not Applicable"
     },
     "tracks": [
       {
-        "track_id": "123-456-789",
-        "project_track_id": "123-456-789",
+        "track_id": "123:456:789",
+        "project_track_id": "123:456:789",
         "filename": "h1hesc-mitf.bb",
         "filetype_url": "http://edamontology.org/format_3004",
         "filetype": "bigBed",
