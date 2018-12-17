@@ -24,7 +24,7 @@
       "project_experiment_id": "123:456:789",
       "experiment_ontology_uri": "http://purl.obolibrary.org/obo/OBI_0000716",
       "experiment_type": "ChIP-seq assay",
-      "contact_orcid_id": "https://orcid.org/0000-0002-9103-1077\r",
+      "contact_orcid_id": "https://orcid.org/0000-0002-9103-1077",
       "target": "MITF",
       "lab_protocol_description": "Some text including date",
       "compute_protocol_description": "Some text including date"
@@ -34,7 +34,12 @@
       "project_sample_id": "123:456:789",
       "sample_ontology_uri": "http://www.ebi.ac.uk/efo/EFO_0003042",
       "sample_type": "H1-hESC",
-      "biomaterial_type": "Cell line"
+      "biomaterial_type": "Cell line",
+      "nested_type": {
+        "nest" : "something",
+        "here" : "here"
+      },
+      "some_list": ["abc", "def"]
     },
     "study": {
       "project": "MyProject",

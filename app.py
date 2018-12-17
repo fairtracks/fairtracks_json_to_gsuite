@@ -3,6 +3,7 @@ from gsuite.GSuiteComposer import *
 
 import json
 import pandas as pd
+from numbers import Number
 
 #app = Flask(__name__)
 
@@ -27,26 +28,19 @@ def to_gsuite():
 def toGsuiteTmp():
     with open('./data/fair_tracks_example2.json') as testData:
         data = json.load(testData)
-        #print data
-
-        print '-------'
         pd.set_option('display.max_colwidth', -1)
+
         columns = []
-        for key, value in data['fair_tracks'].iteritems():
-            if type(value) is dict:
-                for key2 in value.keys():
-                    columns.append([key, key2])
+        for path in dictPaths(data['fair_tracks']):
+            columns.append(path)
 
         result = pd.io.json.json_normalize(data['fair_tracks'], ['tracks'], columns)
-
-        with open('./data/result', 'w') as resultfile:
-            resultfile.write(result.to_string())
-
         result = result.to_dict('records')
-        gsuite = GSuite()
 
+        gsuite = GSuite()
         for track in result:
-            track = {k: str(v) if isinstance(v, int) else v for k, v in track.iteritems()}
+            #convert possible numeric values to str as gsuite requires it
+            track = {k: str(v) if isinstance(v, Number) else v for k, v in track.iteritems()}
             uri = track.pop('url', None)
             if not uri:
                 continue
@@ -54,6 +48,16 @@ def toGsuiteTmp():
 
         print composeToString(gsuite)
 
+        composeToFile(gsuite, './data/result')
+
+def dictPaths(myDict, path=[]):
+    for k,v in myDict.iteritems():
+        newPath = path + [k]
+        if type(v) is dict:
+            for item in dictPaths(v, newPath):
+                yield item
+        elif type(v) is not list:
+            yield newPath
 
 
 if __name__ == '__main__':
