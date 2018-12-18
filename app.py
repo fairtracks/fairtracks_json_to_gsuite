@@ -1,4 +1,4 @@
-#from flask import Flask, request
+from flask import Flask, request
 from gsuite.GSuiteComposer import *
 
 import json
@@ -6,27 +6,23 @@ import pandas as pd
 from numbers import Number
 from collections import OrderedDict
 
-#app = Flask(__name__)
+app = Flask(__name__)
 
 
-#@app.route('/')
+@app.route('/')
 def index():
     return 'OK'
 
 
-#"@app.route('/togsuite', methods=['POST'])
+@app.route('/togsuite', methods=['POST'])
 def to_gsuite():
     gsuite = GSuite()
-    attributes = request.json['attributes']
-    datasets = request.json['datasets']
-    for dataset in datasets:
-        standard_content = dict((k, str(v)) for k, v in dataset['fair'].iteritems() if v)
-        if 'uri' in standard_content:
-            uri = standard_content.pop('uri', None)
-            gsuite.addTrack(GSuiteTrack(uri=uri, attributes=standard_content))
+    createTracks(gsuite)
+
     return composeToString(gsuite)
 
-def toGsuiteTmp():
+
+def createTracks(gsuite):
     with open('./data/fair_tracks_example2.json') as testData:
         data = json.load(testData, object_pairs_hook=OrderedDict)
         pd.set_option('display.max_colwidth', -1)
@@ -50,7 +46,6 @@ def toGsuiteTmp():
         for column in columns:
             columnNames.append("->".join(column))
 
-        gsuite = GSuite()
         for i, track in enumerate(result):
             # order the columns as in input json and cast numbers to string
             trackOrdered = OrderedDict()
@@ -71,7 +66,7 @@ def toGsuiteTmp():
             if not uri:
                 continue
             gsuite.addTrack(GSuiteTrack(uri=uri, attributes=trackOrdered, title=trackOrdered['short_label'],
-                                        genome=trackOrdered['genome_assembly']))
+                                        genome=trackOrdered['genome_assembly'], fileFormat='unknown'))
 
         print composeToString(gsuite)
 
@@ -88,5 +83,5 @@ def dictPaths(myDict, path=[]):
 
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0')
-    toGsuiteTmp()
+    app.run(host='127.0.0.1')
+
