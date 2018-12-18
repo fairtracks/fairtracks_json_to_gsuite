@@ -4,6 +4,7 @@ from gsuite.GSuiteComposer import *
 import json
 import pandas as pd
 from numbers import Number
+from collections import OrderedDict
 
 #app = Flask(__name__)
 
@@ -27,24 +28,50 @@ def to_gsuite():
 
 def toGsuiteTmp():
     with open('./data/fair_tracks_example2.json') as testData:
-        data = json.load(testData)
+        data = json.load(testData, object_pairs_hook=OrderedDict)
         pd.set_option('display.max_colwidth', -1)
 
         columns = []
         for path in dictPaths(data['fair_tracks']):
             columns.append(path)
 
-        result = pd.io.json.json_normalize(data['fair_tracks'], ['tracks'], columns)
+        result = pd.io.json.json_normalize(data['fair_tracks'], ['tracks'], columns, sep='->')
         result = result.to_dict('records')
 
+        trackNames = []
+        for track in data['fair_tracks']['tracks']:
+            cols = dictPaths(track)
+            names = []
+            for column in cols:
+                names.append("->".join(column))
+            trackNames.append(names)
+
+        columnNames = []
+        for column in columns:
+            columnNames.append("->".join(column))
+
         gsuite = GSuite()
-        for track in result:
-            #convert possible numeric values to str as gsuite requires it
-            track = {k: str(v) if isinstance(v, Number) else v for k, v in track.iteritems()}
-            uri = track.pop('url', None)
+        for i, track in enumerate(result):
+            # order the columns as in input json and cast numbers to string
+            trackOrdered = OrderedDict()
+            for col in trackNames[i]:
+                if isinstance(track[col], Number):
+                    trackOrdered[col] = str(track[col])
+                else:
+                    trackOrdered[col] = track[col]
+
+            for col in columnNames:
+                if col in track:
+                    if isinstance(track[col], Number):
+                        trackOrdered[col] = str(track[col])
+                    else:
+                        trackOrdered[col] = track[col]
+
+            uri = trackOrdered.pop('url', None)
             if not uri:
                 continue
-            gsuite.addTrack(GSuiteTrack(uri=uri, attributes=track))
+            gsuite.addTrack(GSuiteTrack(uri=uri, attributes=trackOrdered, title=trackOrdered['short_label'],
+                                        genome=trackOrdered['genome_assembly']))
 
         print composeToString(gsuite)
 
@@ -53,7 +80,7 @@ def toGsuiteTmp():
 def dictPaths(myDict, path=[]):
     for k,v in myDict.iteritems():
         newPath = path + [k]
-        if type(v) is dict:
+        if isinstance(v, dict):
             for item in dictPaths(v, newPath):
                 yield item
         elif type(v) is not list:
