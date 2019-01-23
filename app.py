@@ -8,6 +8,11 @@ from collections import OrderedDict
 
 app = Flask(__name__)
 
+SEP = '->'
+URL_PATH = 'id' + SEP + 'url'
+TITLE_PATH = 'name' + SEP + 'short_label'
+GENOME_PATH = 'genome_assembly'
+
 
 @app.route('/')
 def index():
@@ -23,7 +28,7 @@ def to_gsuite():
 
 
 def createTracks(gsuite):
-    with open('./data/fair_tracks_example2.json') as testData:
+    with open('./data/basic_example.json') as testData:
         data = json.load(testData, object_pairs_hook=OrderedDict)
         pd.set_option('display.max_colwidth', -1)
 
@@ -31,7 +36,10 @@ def createTracks(gsuite):
         for path in dictPaths(data['fair_tracks']):
             columns.append(path)
 
-        result = pd.io.json.json_normalize(data['fair_tracks'], ['tracks'], columns, sep='->')
+        result = pd.io.json.json_normalize(data['fair_tracks'], ['tracks'], columns, sep=SEP)
+        result = result.to_dict('records')
+        # normalize has to be run twice to unpack json in tracks list
+        result = pd.io.json.json_normalize(result, sep=SEP)
         result = result.to_dict('records')
 
         trackNames = []
@@ -39,12 +47,12 @@ def createTracks(gsuite):
             cols = dictPaths(track)
             names = []
             for column in cols:
-                names.append("->".join(column))
+                names.append(SEP.join(column))
             trackNames.append(names)
 
         columnNames = []
         for column in columns:
-            columnNames.append("->".join(column))
+            columnNames.append(SEP.join(column))
 
         for i, track in enumerate(result):
             # order the columns as in input json and cast numbers to string
@@ -62,11 +70,11 @@ def createTracks(gsuite):
                     else:
                         trackOrdered[col] = track[col]
 
-            uri = trackOrdered.pop('url', None)
+            uri = trackOrdered.pop(URL_PATH, None)
             if not uri:
                 continue
-            gsuite.addTrack(GSuiteTrack(uri=uri, attributes=trackOrdered, title=trackOrdered['short_label'],
-                                        genome=trackOrdered['genome_assembly'], fileFormat='unknown'))
+            gsuite.addTrack(GSuiteTrack(uri=uri, attributes=trackOrdered, title=trackOrdered[TITLE_PATH],
+                                        genome=trackOrdered[GENOME_PATH]))
 
         print composeToString(gsuite)
 
@@ -83,5 +91,6 @@ def dictPaths(myDict, path=[]):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1')
+    # app.run(host='127.0.0.1')
+    to_gsuite()
 
