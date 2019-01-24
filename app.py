@@ -22,16 +22,14 @@ def index():
 @app.route('/togsuite', methods=['POST'])
 def to_gsuite():
     gsuite = GSuite()
-    createTracks(gsuite)
+    data = json.loads(request.data, object_pairs_hook=OrderedDict)
+    for item in data:
+        createTracks(gsuite, item)
 
     return composeToString(gsuite)
 
 
-def createTracks(gsuite):
-    with open('./data/basic_example.json') as testData:
-        data = json.load(testData, object_pairs_hook=OrderedDict)
-        pd.set_option('display.max_colwidth', -1)
-
+def createTracks(gsuite, data):
         columns = []
         for path in dictPaths(data['fair_tracks']):
             columns.append(path)
@@ -76,9 +74,6 @@ def createTracks(gsuite):
             gsuite.addTrack(GSuiteTrack(uri=uri, attributes=trackOrdered, title=trackOrdered[TITLE_PATH],
                                         genome=trackOrdered[GENOME_PATH]))
 
-        print composeToString(gsuite)
-
-        composeToFile(gsuite, './data/result')
 
 def dictPaths(myDict, path=[]):
     for k,v in myDict.iteritems():
@@ -91,6 +86,5 @@ def dictPaths(myDict, path=[]):
 
 
 if __name__ == '__main__':
-    # app.run(host='127.0.0.1')
-    to_gsuite()
-
+    pd.set_option('display.max_colwidth', -1)
+    app.run(host='127.0.0.1')

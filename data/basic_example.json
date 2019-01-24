@@ -1,4 +1,4 @@
-{
+[{
     "fair_tracks": {
         "_schema": "https://www.elixir-europe.org/IS/FAIRGDataTracks/json-schemas/0.1",
         "experiment": {
@@ -87,4 +87,4 @@
             }
         ]
     }
-}
+}]
