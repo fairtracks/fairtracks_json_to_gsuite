@@ -87,4 +87,4 @@ def dictPaths(myDict, path=[]):
 
 if __name__ == '__main__':
     pd.set_option('display.max_colwidth', -1)
-    app.run(host='127.0.0.1')
+    app.run(host='0.0.0.0')
