@@ -30,6 +30,9 @@ def to_gsuite():
 
 
 def createTracks(gsuite, data):
+        if 'fair_tracks' not in data:
+            return
+
         columns = []
         for path in dictPaths(data['fair_tracks']):
             columns.append(path)
