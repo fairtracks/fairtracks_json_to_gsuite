@@ -1,16 +1,14 @@
-from flask import Flask, request
-from gsuite.GSuiteComposer import *
-
 import json
-import pandas as pd
-from numbers import Number
-from collections import OrderedDict
+
+from flask import Flask, request
+
+from gsuite.GSuiteComposer import *
 
 app = Flask(__name__)
 
 SEP = '->'
-URL_PATH = 'id' + SEP + 'url'
-TITLE_PATH = 'name' + SEP + 'short_label'
+URL_PATH = 'file_iri'
+TITLE_PATH = 'label_short'
 GENOME_PATH = 'genome_assembly'
 
 
@@ -30,52 +28,35 @@ def to_gsuite():
 
 
 def createTracks(gsuite, data):
-        if 'fair_tracks' not in data:
-            return
+    if 'tracks' not in data:
+        return
 
-        columns = []
-        for path in dictPaths(data['fair_tracks']):
-            columns.append(path)
+    trackData = OrderedDict()
+    for path, value in dictPaths(data['tracks']):
+        trackData[path] = value
 
-        result = pd.io.json.json_normalize(data['fair_tracks'], ['tracks'], columns, sep=SEP)
-        result = result.to_dict('records')
-        # normalize has to be run twice to unpack json in tracks list
-        result = pd.io.json.json_normalize(result, sep=SEP)
-        result = result.to_dict('records')
+    dataWithoutTracks = data.copy()
+    dataWithoutTracks.pop('tracks')
 
-        trackNames = []
-        for track in data['fair_tracks']['tracks']:
-            cols = dictPaths(track)
-            names = []
-            for column in cols:
-                names.append(SEP.join(column))
-            trackNames.append(names)
+    noTrackData = OrderedDict()
+    for path, value in dictPaths(dataWithoutTracks):
+        noTrackData[path] = value
 
-        columnNames = []
-        for column in columns:
-            columnNames.append(SEP.join(column))
+    # # order the columns as in input json with track attributes first
+    resultOrdered = OrderedDict()
+    for col in trackData:
+        if trackData[col]:
+            resultOrdered[col] = trackData[col]
 
-        for i, track in enumerate(result):
-            # order the columns as in input json and cast numbers to string
-            trackOrdered = OrderedDict()
-            for col in trackNames[i]:
-                if isinstance(track[col], Number):
-                    trackOrdered[col] = str(track[col])
-                else:
-                    trackOrdered[col] = track[col]
+    for col in noTrackData:
+        if noTrackData[col]:
+            resultOrdered[col] = noTrackData[col]
 
-            for col in columnNames:
-                if col in track:
-                    if isinstance(track[col], Number):
-                        trackOrdered[col] = str(track[col])
-                    else:
-                        trackOrdered[col] = track[col]
-
-            uri = trackOrdered.pop(URL_PATH, None)
-            if not uri:
-                continue
-            gsuite.addTrack(GSuiteTrack(uri=uri, attributes=trackOrdered, title=trackOrdered[TITLE_PATH],
-                                        genome=trackOrdered[GENOME_PATH]))
+    uri = resultOrdered.pop(URL_PATH, None)
+    if not uri:
+        return
+    gsuite.addTrack(GSuiteTrack(uri=uri, attributes=resultOrdered, title=resultOrdered[TITLE_PATH],
+                                genome=resultOrdered[GENOME_PATH]))
 
 
 def dictPaths(myDict, path=[]):
@@ -84,10 +65,16 @@ def dictPaths(myDict, path=[]):
         if isinstance(v, dict):
             for item in dictPaths(v, newPath):
                 yield item
-        elif type(v) is not list:
-            yield newPath
+        else:
+            # track attributes should not have 'tracks->' in the attribute name
+            if newPath[0] == 'tracks':
+                yield SEP.join(newPath[1:]), str(v)
+            else:
+                if isinstance(v, list):
+                    yield SEP.join(newPath), ','.join(v)
+                else:
+                    yield SEP.join(newPath), str(v)
 
 
 if __name__ == '__main__':
-    pd.set_option('display.max_colwidth', -1)
     app.run(host='127.0.0.1')
