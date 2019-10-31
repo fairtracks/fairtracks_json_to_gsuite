@@ -1,12 +1,14 @@
 import json
-
+from collections import OrderedDict
 from flask import Flask, request
-
-from gsuite.GSuiteComposer import *
+from gsuite.GSuite import GSuite
+from gsuite.GSuiteComposer import composeToString
+from gsuite.GSuiteTrack import GSuiteTrack
 
 app = Flask(__name__)
 
 SEP = '->'
+ARRAY_SEP = ';'
 URL_PATH = 'file_iri'
 TITLE_PATH = 'label_short'
 GENOME_PATH = 'genome_assembly'
@@ -71,7 +73,7 @@ def dictPaths(myDict, path=[]):
                 yield SEP.join(newPath[1:]), str(v)
             else:
                 if isinstance(v, list):
-                    yield SEP.join(newPath), ','.join(v)
+                    yield SEP.join(newPath), ARRAY_SEP.join(v)
                 else:
                     yield SEP.join(newPath), str(v)
 
