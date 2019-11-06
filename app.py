@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 SEP = '->'
 ARRAY_SEP = ';'
-URL_PATH = 'file_url'
+URL_PATH = 'file_iri'
 TITLE_PATH = 'label_short'
 GENOME_PATH = 'genome_assembly'
 
